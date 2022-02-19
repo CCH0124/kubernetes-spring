@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: spring-be
+    svc: spring-service
+  name: spring-example
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: spring-example
+  template:
+    metadata:
+      labels:
+        app: spring-example
+    spec:
+      containers:
+      - image: cch0124/cicd-spring:latest
+        imagePullPolicy: Always
+        name: cicd-spring
+        ports:
+        - containerPort: 8080
+          name: httpport
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 20
