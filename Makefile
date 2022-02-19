@@ -8,7 +8,7 @@ VERSION ?=${COMMIT}
 TYPE    ?=KIND
 
 build-image:
-        docker build --tag ${SERVER}${REPO}:${VERSION} .
+        docker build --build-arg HASH=${COMMIT} --build-arg LOG=${LOG} --tag ${SERVER}${REPO}:${VERSION} .
         docker image tag ${SERVER}${REPO}:${VERSION} ${SERVER}${REPO}:latest
 
 push-image: build-image
