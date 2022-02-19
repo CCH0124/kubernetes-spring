@@ -5,7 +5,7 @@ COPY src /build/src/
 WORKDIR /build/
 RUN ["mvn", "package", "-Dmaven.test.skip=true"]
 
-FROM openjdk:11-jdk-slim
+FROM adoptopenjdk/openjdk11:alpine-jre 
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 ARG HASH
