@@ -13,14 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequiredArgsConstructor
 public class IpController {
 
     @Value("${COMMITHASH:}")
-    private final String LATEST_COMMIT_HASH;
+    private String LATEST_COMMIT_HASH;
 
     @Value("${COMMITLOG:}")
-    private final String LATEST_COMMIT_LOG;
+    private String LATEST_COMMIT_LOG;
 
     @GetMapping(value = "ipadd", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIpAdd() throws UnknownHostException {
