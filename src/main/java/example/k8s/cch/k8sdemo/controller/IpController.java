@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class IpController {
 
-    @Value("${COMMITHASH}")
+    @Value("${COMMITHASH:}")
     private final String LATEST_COMMIT_HASH;
 
-    @Value("${COMMITLOG}")
+    @Value("${COMMITLOG:}")
     private final String LATEST_COMMIT_LOG;
 
     @GetMapping(value = "ipadd", produces = MediaType.APPLICATION_JSON_VALUE)
