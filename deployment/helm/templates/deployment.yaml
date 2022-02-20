@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: spring-be
+    svc: {{ .Values.spring.serviceName }}
+  name: {{ .Chart.Name }}
+spec:
+  replicas: {{ .Values.spring.replicas }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "helm.selectorLabels" . | nindent 6 }} # 引用 _helpers.tpl
+  template:
+    metadata:
+      labels:
+        {{- include "helm.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - image: cch0124/cicd-spring:{{ .Values.spring.image.tag }}
+        imagePullPolicy: {{ .Values.spring.pullPolicy }}
+        name: cicd-spring
+        ports:
+        - containerPort: 8080
+          name: httpport
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 20
