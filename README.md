@@ -238,3 +238,98 @@ $ helm list # 又增加一版
 NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                   APP VERSION
 spring-app      default         3               2022-02-20 06:01:07.734659913 +0000 UTC deployed        cicd-spring-0.1.0       1.0.0
 ```
+
+## [Kustomize](https://kubectl.docs.kubernetes.io/)
+不像helm使用大量 template 方式描述管理 yaml，而是使用 patch 方式。kubernetes 也將其整合。經常會透過 `-k` 跟 `apply`、`get` 等指令整合。
+
+合併 `kustomization.yaml` 下 `resource` 定義的資源呈現 yaml 格式
+```bash
+$ kubectl kustomize . 
+```
+佈署 `kustomization.yaml` 下 `resource` 定義的資源 `.` 表示當前目錄的 `kustomization.yaml`
+```bash
+$ kubectl apply -k .
+```
+獲取當前佈署資源
+```bash
+$ kubectl get -k .
+NAME                     TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
+service/spring-service   ClusterIP   10.111.138.109   <none>        8080/TCP,8081/TCP   2m36s
+
+NAME                             READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/spring-example   3/3     3            3           2m36s
+```
+
+刪除資源
+```bash
+$ kubectl delete -k .
+```
+
+在 overlays 的目錄下可以定義說我要基於 base 中的 yaml 修改那些內容，因此基於環境的需求可以用不同目錄切分定義資源。
+
+`kustomization.yaml` 內容
+```yaml
+namePrefix: development-
+commonLabels:
+  variant: development
+  owner: CCH
+commonAnnotations:
+  env: dev
+bases:
+- ../../base
+patches: # 補釘的位置
+- replica_count.yaml
+- service_type.yaml
+```
+
+要打補釘的內容
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: spring-be
+    svc: spring-service
+  name: spring-example
+spec:
+  replicas: 1
+```
+
+佈署，其前綴會帶上 `development-`（kustomization.yaml 下 `namePrefix` 的定義值）
+```bash
+/kubernetes-spring/deployment/kustomzie/overlays/development$ kubectl apply -k .
+service/development-spring-service created
+deployment.apps/development-spring-example created
+```
+
+使用 `kubectl kustomize .` 觀察，可以發現 `commonLabels` 和 `commonAnnotations` 會分別添加至 `annotations` 和 `labels` 字段。
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    env: dev
+  labels:
+    app: spring
+    owner: CCH
+    variant: development
+  name: development-spring-service
+spec:
+  ports:
+  - name: httpport
+    port: 8080
+    targetPort: 8080
+  - name: metricsport
+    port: 8081
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: spring-example
+    owner: CCH
+    variant: development
+  type: NodePort
+---
+...
+```
+
+因為 patchs 會對 base 下檔案進行比較之類的流程，如果在 overlays 下定義不存在於 base 的資源會無法佈署。
