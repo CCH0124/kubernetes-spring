@@ -1,0 +1,11 @@
+namePrefix: staging-
+commonLabels:
+  variant: staging
+  owner: CCH
+commonAnnotations:
+  env: staging
+bases:
+- ../../base
+patches:
+- replica_count.yaml
+- service_type.yaml

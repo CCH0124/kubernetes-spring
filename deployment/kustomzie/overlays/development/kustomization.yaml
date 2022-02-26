@@ -1,0 +1,11 @@
+namePrefix: development-
+commonLabels:
+  variant: development
+  owner: CCH
+commonAnnotations:
+  env: dev
+bases:
+- ../../base
+patches:
+- replica_count.yaml
+- service_type.yaml
